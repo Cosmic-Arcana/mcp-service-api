@@ -1,98 +1,135 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cosmic Arcana — MCP Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The AI agent's doorway into Cosmic Arcana. This service exposes the application's capabilities as MCP tools and resources, so an AI agent can decide what it needs, call it, and build a reading from the results.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## The idea
 
-## Description
+Cosmic Arcana is an AI-native fortune-telling experience.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A user asks a question — about a decision, a relationship, a career move, or simply what the coming week might bring — and an AI agent answers the way a digital fortune-teller would. It draws tarot cards, looks at what is happening in the sky, remembers previous readings, and weaves everything into a personal, entertaining prediction.
 
-## Project setup
+The predictions are **fictional and reflective** by design. They are an invitation to think, not a claim about the future. Real-world data such as NASA imagery or astronomical events is used as storytelling material — symbolism, themes, atmosphere — and is never presented as evidence that the future can be predicted. The product always keeps a visible line between what was *retrieved from the real world* and what was *imagined*.
 
-```bash
-$ npm install
+The core loop:
+
+```text
+User question
+    ↓
+Prediction / tarot request
+    ↓
+AI agent
+    ↓
+Relevant tools and context
+    ↓
+Optional cosmic, historical or personal context
+    ↓
+AI interpretation
+    ↓
+Fictional prediction
+    ↓
+Saved reading
 ```
 
-## Compile and run the project
+## How it is being built
 
-```bash
-# development
-$ npm run start
+Cosmic Arcana is also an experiment: how far can one software engineer push Claude Code as an engineering partner?
 
-# watch mode
-$ npm run start:dev
+The project is built almost entirely through **Claude Code Remote Control**. A Claude Code session runs on a development machine, and the engineer drives it from a smartphone. There is no fixed schedule and no desk required. Work happens from a phone, wherever the engineer happens to be — in small pockets of free time (a commute, a queue, a quiet evening) and whenever there are tokens left that are worth spending. The roadmap is shaped as much by spontaneous ideas as by a plan. A feature often starts as a thought typed on a phone and ends as a reviewed commit.
 
-# production mode
-$ npm run start:prod
+That way of working shapes the engineering:
+
+- **Claude implements, the engineer steers.** Most of the code is delegated; architecture, service boundaries and review stay in human hands.
+- **Context lives in the repositories.** Any session must be able to pick up where the previous one stopped, so knowledge is kept in `CLAUDE.md` files, progress notes, conventions, skills and hooks — not in anyone's memory.
+- **Small slices.** Tasks are cut small enough to plan, implement, review and commit from a phone screen.
+- **Automated quality gates.** Tests, structured logging and consistent conventions catch what a small screen might miss.
+- **Multi-repository by design.** Every service lives in its own repository, which makes cross-repository context sharing part of the experiment.
+- **Deliberate context budgeting.** Short sessions reward tight prompts, focused tools and small outputs — the same discipline the product asks of its own AI agent.
+
+## The system
+
+Cosmic Arcana is split into independent services, each in its own repository:
+
+| Service | Role |
+| --- | --- |
+| **cosmic-arcana-storefront** | Web application and BFF — everything the user sees, and the only API the browser talks to |
+| **ai-service-api** | The fortune-teller's mind — predictions, tarot readings and all AI-specific business logic |
+| **nasa-service-api** | The window to the real sky — retrieves, normalizes and caches NASA and astronomical data |
+| **mcp-service-api** *(this repository)* | The AI agent's doorway — exposes application capabilities as MCP tools, with agent authentication and on-behalf-of access |
+
+Around them sit a few parts that do not have their own repositories yet: a **CQRS command layer** that orchestrates use cases, a **Redis / BullMQ broker** that carries domain events, a **PostgreSQL read model** that stores readings, and a **PostgreSQL MCP server** that gives the agent restricted, user-scoped database access.
+
+```text
+User
+  │
+  ▼
+Storefront (Next.js + BFF) ◄─────────────── queries ───────────────┐
+  │                                                                │
+  │ commands                                                       │
+  ▼                                                                │
+Command layer (NestJS CQRS)                                        │
+  │                                                                │
+  ├──► AI service ─────┐                                           │
+  └──► NASA service ───┤                                           │
+                       │ domain events                             │
+                       ▼                                           │
+             Broker (Redis / BullMQ) ──► Read model (PostgreSQL) ──┘
+
+
+AI agent (Claude) ── MCP ──► MCP service ──┬──► Command layer
+                                           └──► PostgreSQL MCP ──► cosmic_agent schema (RLS)
 ```
 
-## Run tests
+## What this service does
 
-```bash
-# unit tests
-$ npm run test
+The Model Context Protocol (MCP) is at the core of the experiment. Instead of a hard-coded pipeline that runs every step for every question, the agent is given a set of capabilities and decides which ones a question actually requires.
 
-# e2e tests
-$ npm run test:e2e
+- **App tools** — actions the agent can take in the application: creating a prediction, drawing tarot cards, looking up a card's meaning, asking for cosmic context. Tools hold no business logic of their own; they route to the command layer, the same way the storefront does.
+- **Data resources** — read access to the user's own history, such as previous readings, served through the PostgreSQL MCP server.
+- **Agent authentication** — the agent has to prove who it is before it can use anything.
+- **On-behalf-of (OBO) access** — the agent never acts as itself with broad permissions. It exchanges its token for one that says *"this agent, acting for this user"*.
 
-# test coverage
-$ npm run test:cov
+```text
+                  AI Agent
+                     │
+                    MCP
+                     ▼
+             ┌───────────────┐
+             │  MCP Server   │
+             └───────┬───────┘
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+      App tools           DB resources
+          │                     │
+          ▼                     ▼
+    Command layer         PostgreSQL MCP
+                                │
+                                ▼
+                        AI-facing schema
+                                │
+                                ▼
+                        User-scoped data
 ```
 
-## Deployment
+### Access control
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+When the agent reaches for data, its token carries both identities:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- `sub` — the user the request is for (for example `user123`);
+- `act` — who is actually performing it (`ai_agent`).
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+The PostgreSQL MCP server exposes only a restricted `cosmic_agent` schema, and row-level security (RLS) in PostgreSQL makes sure the agent sees only that user's data — even if a tool were asked for something else. The agent never gets more access than the user has, and usually gets less: only what an agent needs.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Intentional tool design
 
-## Resources
+MCP usage should be deliberate and cheap:
 
-Check out a few resources that may come in handy when working with NestJS:
+- a small set of well-described tools rather than one tool per endpoint;
+- compact outputs — the smallest amount of information that answers the agent's need;
+- no reliance on broad tool discovery or on calling every tool "just in case".
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+A good reading comes from the agent calling the two tools it needs, not all ten it has.
 
-## Support
+### What it does not do
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+It holds no business logic of its own, does not generate predictions, does not call NASA directly and has no database access beyond the restricted agent schema.
