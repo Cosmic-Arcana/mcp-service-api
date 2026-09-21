@@ -11,8 +11,7 @@ export const MOCK_READINGS: readonly ReadingSummary[] = [
       { name: 'The Chariot', reversed: true },
       { name: 'Ace of Wands', reversed: false },
     ],
-    summary:
-      'Patient craft is paying off, but forcing the pace stalls it; a new spark is close.',
+    summary: 'Patient craft is paying off, but forcing the pace stalls it; a new spark is close.',
   },
   {
     id: 'mock-reading-3',
@@ -20,8 +19,7 @@ export const MOCK_READINGS: readonly ReadingSummary[] = [
     topic: 'relationships',
     spread: 'single',
     cards: [{ name: 'Two of Cups', reversed: false }],
-    summary:
-      'A mutual connection deepens when both sides say plainly what they want.',
+    summary: 'A mutual connection deepens when both sides say plainly what they want.',
   },
   {
     id: 'mock-reading-2',
@@ -33,8 +31,7 @@ export const MOCK_READINGS: readonly ReadingSummary[] = [
       { name: 'The Hermit', reversed: false },
       { name: 'Six of Pentacles', reversed: true },
     ],
-    summary:
-      'A tense team conflict invites stepping back before choosing a side.',
+    summary: 'A tense team conflict invites stepping back before choosing a side.',
   },
   {
     id: 'mock-reading-1',
@@ -42,7 +39,6 @@ export const MOCK_READINGS: readonly ReadingSummary[] = [
     topic: 'personal growth',
     spread: 'single',
     cards: [{ name: 'The Star', reversed: false }],
-    summary:
-      'Recovery after a hard season; small hopeful habits matter more than big plans.',
+    summary: 'Recovery after a hard season; small hopeful habits matter more than big plans.',
   },
 ];
