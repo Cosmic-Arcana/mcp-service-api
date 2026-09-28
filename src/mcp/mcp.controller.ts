@@ -12,7 +12,11 @@ export class McpController {
    * responses and must own the socket for the whole exchange.
    */
   @All()
-  handle(@Req() req: Request, @Res() res: Response, @Body() body: unknown): Promise<void> {
+  handle(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: unknown,
+  ): Promise<void> {
     return this.mcp.handle(req, res, body);
   }
 }

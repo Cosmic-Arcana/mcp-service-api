@@ -16,7 +16,9 @@ export class McpService implements OnModuleInit {
   constructor(private readonly serverFactory: McpServerFactory) {}
 
   onModuleInit(): void {
-    const httpHandler = createMcpHandler(() => this.serverFactory.create());
+    const httpHandler = createMcpHandler((context) =>
+      this.serverFactory.create(context),
+    );
 
     this.handler = toNodeHandler(httpHandler, {
       onerror: (error: Error) =>
