@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@cosmic-arcana/sdk": "github:Cosmic-Arcana/cosmic-arcana-sdk#semver:^0.1.0",
     "@modelcontextprotocol/express": "^2.0.0",
     "@modelcontextprotocol/node": "^2.0.0",
     "@modelcontextprotocol/server": "^2.0.0",

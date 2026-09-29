@@ -1,6 +1,6 @@
-import type { ReadingSummary } from './reading-summary.schema';
+import type { ReadingSummaryV1 } from '@cosmic-arcana/sdk';
 
-export const MOCK_READINGS: readonly ReadingSummary[] = [
+export const MOCK_READINGS: readonly ReadingSummaryV1[] = [
   {
     id: 'mock-reading-4',
     readAt: '2026-09-18T19:42:00.000Z',
