@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [development, main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly rebuild so a base-image fix reaches the application without waiting for a commit.
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: service-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: Cosmic-Arcana/cosmic-arcana-infrastructure/.github/workflows/service-ci.yml@main
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service-name: mcp-service-api
+      tier: liveness
+      # A scheduled run starts on the default branch; the application channel is development.
+      ref: ${{ github.event_name == 'schedule' && 'development' || '' }}
+      test-command: 'npm test'
+      e2e-command: ''
+      build-image: true
+    secrets:
+      INFRA_DISPATCH_TOKEN: ${{ secrets.INFRA_DISPATCH_TOKEN }}
