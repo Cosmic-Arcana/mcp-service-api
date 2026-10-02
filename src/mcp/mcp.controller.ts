@@ -6,6 +6,7 @@ import { runWithAgentContext } from '../agent/agent-context.storage';
 import { AgentIdentityPort } from '../agent/agent-identity.port';
 import { MCP_ROUTE } from './mcp.constants';
 import { McpService } from './mcp.service';
+import { RejectedToolCalls } from './rejected-tool-calls';
 
 @Controller(MCP_ROUTE)
 export class McpController {
@@ -15,6 +16,7 @@ export class McpController {
     private readonly mcp: McpService,
     private readonly identity: AgentIdentityPort,
     private readonly activity: AgentActivityRecorder,
+    private readonly rejected: RejectedToolCalls,
   ) {}
 
   /**
@@ -37,6 +39,8 @@ export class McpController {
         this.seenSessions.add(sessionId);
         this.activity.record('session.opened', { target: req.method });
       }
+
+      this.rejected.record(body);
 
       try {
         return await this.mcp.handle(req, res, body);
